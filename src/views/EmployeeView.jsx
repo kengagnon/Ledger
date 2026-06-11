@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
 import AllocationInput from '../components/AllocationInput'
+import PageHeader from '../components/PageHeader'
 
 function formatWeek(week) {
   const [y, m, d] = week.split('-').map(Number)
@@ -77,31 +78,31 @@ export default function EmployeeView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-800">
-            Week of {formatWeek(week)}
-          </h1>
-          <p className="mt-1 text-xs font-medium text-gray-500">
+      <PageHeader
+        title={`Week of ${formatWeek(week)}`}
+        subtext={
+          <>
             Here&rsquo;s your estimated allocation, derived from Jira activity at{' '}
             {spConversionRate} hrs per story point.
-          </p>
-        </div>
-        <label className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500">Viewing as</span>
-          <select
-            className="input"
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-          >
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+          </>
+        }
+        actions={
+          <label className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500">Viewing as</span>
+            <select
+              className="input"
+              value={selectedId}
+              onChange={(e) => setSelectedId(e.target.value)}
+            >
+              {employees.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      />
 
       {confirmation?.confirmed && (
         <div className="flex items-start justify-between gap-4 rounded-lg border border-green-200 bg-green-50 px-5 py-4">
@@ -133,21 +134,23 @@ export default function EmployeeView() {
           const h = hours[p.id] || 0
           const pct = split.find((s) => s.projectId === p.id)?.percentage || 0
           return (
-            <Card key={p.id}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-slate-800">{p.name}</h2>
+            <Card key={p.id} accent={p.type} className="relative">
+              <span className="absolute right-4 top-4">
                 <Badge variant={p.type} />
-              </div>
-              <p className="mt-3 text-xl font-semibold text-slate-800">
-                {h} <span className="text-sm font-medium text-gray-500">hrs est.</span>
+              </span>
+              <h2 className="text-base font-semibold text-slate-800">{p.name}</h2>
+              <p className="mt-3 text-4xl font-bold text-slate-900">
+                {h}{' '}
+                <span className="text-[13px] font-normal text-slate-500">hrs est.</span>
               </p>
-              <p className="mt-0.5 text-xs font-medium text-gray-500">{pct}% of your week</p>
+              <p className="mt-1 text-[13px] text-slate-500">{pct}% of your week</p>
             </Card>
           )
         })}
       </div>
 
       <Card
+        accent="teal"
         title="Confirm your split"
         subtitle="Pre-populated from your Jira activity. Adjust if it doesn't match reality — must total 100%."
       >
@@ -164,16 +167,16 @@ export default function EmployeeView() {
               />
             </label>
           ))}
-          <div className="flex items-center pb-2">
+          <div className="flex flex-col pb-1">
             <span
               className={`text-sm font-semibold ${
-                total === 100 ? 'text-slate-800' : 'text-red-600'
+                total === 100 ? 'text-slate-900' : 'text-red-600'
               }`}
             >
               Total {total}%
             </span>
             {total !== 100 && (
-              <span className="ml-2 text-xs font-medium text-red-500">must equal 100%</span>
+              <span className="text-[10px] font-medium text-red-500">≠ 100</span>
             )}
           </div>
         </div>
@@ -200,6 +203,7 @@ export default function EmployeeView() {
       </Card>
 
       <Card
+        accent="teal"
         title="Jira activity this week"
         subtitle={`Read-only context · story points convert at ${spConversionRate} hrs/SP · ${totalHours} hrs total`}
       >
@@ -217,7 +221,9 @@ export default function EmployeeView() {
             <tbody>
               {tickets.map((t) => (
                 <tr key={t.key}>
-                  <td className="td font-medium text-brand-teal">{t.key}</td>
+                  <td className="td">
+                    <span className="ticket-key">{t.key}</span>
+                  </td>
                   <td className="td">{t.title}</td>
                   <td className="td text-right">{t.storyPoints}</td>
                   <td className="td text-right">{t.storyPoints * spConversionRate}</td>

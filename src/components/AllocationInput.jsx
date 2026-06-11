@@ -15,11 +15,11 @@ export default function AllocationInput({ value, onChange, invalid = false, disa
           const n = e.target.value === '' ? 0 : Number(e.target.value)
           onChange(Number.isNaN(n) ? 0 : n)
         }}
-        className={`input w-[72px] pr-7 text-center ${
-          invalid ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''
+        className={`input w-[68px] pr-6 text-center font-semibold ${
+          invalid ? 'border-red-500 bg-[#FFF5F5]' : ''
         }`}
       />
-      <span className="pointer-events-none absolute right-2.5 text-xs text-gray-400">%</span>
+      <span className="pointer-events-none absolute right-2 text-xs text-gray-400">%</span>
     </div>
   )
 }

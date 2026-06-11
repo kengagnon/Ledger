@@ -1,7 +1,16 @@
-export default function Card({ title, subtitle, actions, children, className = '' }) {
+// Top accent stripe colors keyed by project classification; "teal" for neutral cards.
+const ACCENTS = {
+  capex: 'border-t-[3px] border-t-brand-blue',
+  opex: 'border-t-[3px] border-t-slate-400',
+  teal: 'border-t-[3px] border-t-brand-teal',
+}
+
+export default function Card({ title, subtitle, actions, accent, children, className = '' }) {
   return (
     <section
-      className={`rounded-lg border border-slate-200 bg-white p-5 shadow-card ${className}`}
+      className={`rounded-xl border border-slate-200 bg-white p-5 shadow-card ${
+        accent ? ACCENTS[accent] || ACCENTS.teal : ''
+      } ${className}`}
     >
       {(title || actions) && (
         <div className="mb-4 flex items-start justify-between gap-4">

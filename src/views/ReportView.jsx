@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
+import PageHeader from '../components/PageHeader'
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -11,6 +12,41 @@ const usd = new Intl.NumberFormat('en-US', {
 
 function formatHours(h) {
   return Number.isInteger(h) ? String(h) : h.toFixed(1)
+}
+
+function LockIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0 text-slate-500"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0 text-green-700"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  )
 }
 
 export default function ReportView() {
@@ -125,23 +161,21 @@ export default function ReportView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-800">
-            IT Labor Cost Allocation Report — {monthLabel}
-          </h1>
-          <p className="mt-1 text-xs font-medium text-gray-500">
-            Derived from confirmed weekly allocations and loaded labor rates.
-          </p>
-        </div>
-        <div className="no-print flex items-center gap-2">
-          <button className="btn-secondary" onClick={exportCsv}>
-            Export CSV
-          </button>
-          <button className="btn-secondary" onClick={() => window.print()}>
-            Print / Export PDF
-          </button>
-        </div>
+      <div className="-mx-6 -mt-8 border-b border-slate-200 bg-slate-50 px-6 py-6">
+        <PageHeader
+          title={`IT Labor Cost Allocation Report — ${monthLabel}`}
+          subtext="Derived from confirmed weekly allocations and loaded labor rates."
+          actions={
+            <div className="no-print flex items-center gap-2">
+              <button className="btn-secondary" onClick={exportCsv}>
+                Export CSV
+              </button>
+              <button className="btn-secondary" onClick={() => window.print()}>
+                Print / Export PDF
+              </button>
+            </div>
+          }
+        />
       </div>
 
       {signed && (
@@ -155,7 +189,7 @@ export default function ReportView() {
         </div>
       )}
 
-      <Card title="Summary by employee">
+      <Card accent="teal" title="Summary by employee">
         <div className="overflow-x-auto">
           <table className="table-striped w-full border-collapse">
             <thead>
@@ -177,30 +211,34 @@ export default function ReportView() {
                   <td className="td text-right">{formatHours(r.capexHours)}</td>
                   <td className="td text-right">{formatHours(r.opexHours)}</td>
                   <td className="td text-right">{usd.format(r.employee.loadedRate)}/hr</td>
-                  <td className="td text-right">{usd.format(r.capexDollars)}</td>
-                  <td className="td text-right">{usd.format(r.opexDollars)}</td>
+                  <td className="td text-right font-semibold text-slate-900">
+                    {usd.format(r.capexDollars)}
+                  </td>
+                  <td className="td text-right font-semibold text-slate-900">
+                    {usd.format(r.opexDollars)}
+                  </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr>
-                <td className="td border-t-2 border-slate-300 font-semibold text-slate-800">
+              <tr className="bg-green-50">
+                <td className="td border-t-2 border-t-brand-teal font-bold text-slate-900">
                   Total
                 </td>
-                <td className="td border-t-2 border-slate-300 text-right font-semibold text-slate-800">
+                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
                   {formatHours(totals.totalHours)}
                 </td>
-                <td className="td border-t-2 border-slate-300 text-right font-semibold text-slate-800">
+                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
                   {formatHours(totals.capexHours)}
                 </td>
-                <td className="td border-t-2 border-slate-300 text-right font-semibold text-slate-800">
+                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
                   {formatHours(totals.opexHours)}
                 </td>
-                <td className="td border-t-2 border-slate-300" />
-                <td className="td border-t-2 border-slate-300 text-right font-semibold text-slate-800">
+                <td className="td border-t-2 border-t-brand-teal" />
+                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
                   {usd.format(totals.capexDollars)}
                 </td>
-                <td className="td border-t-2 border-slate-300 text-right font-semibold text-slate-800">
+                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
                   {usd.format(totals.opexDollars)}
                 </td>
               </tr>
@@ -213,13 +251,15 @@ export default function ReportView() {
         <h2 className="mb-3 text-base font-semibold text-slate-800">Project breakdown</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {projectBreakdown.map(({ project, hours, dollars }) => (
-            <Card key={project.id}>
+            <Card key={project.id} accent={project.type}>
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-800">{project.name}</h3>
                 <Badge variant={project.type} />
               </div>
-              <p className="mt-3 text-xl font-semibold text-slate-800">{usd.format(dollars)}</p>
-              <p className="mt-0.5 text-xs font-medium text-gray-500">
+              <p className="mt-3 text-[32px] font-bold leading-tight text-slate-900">
+                {usd.format(dollars)}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
                 {formatHours(hours)} hrs allocated this period
               </p>
             </Card>
@@ -227,10 +267,16 @@ export default function ReportView() {
         </div>
       </section>
 
-      <Card
-        title="Manager attestation"
-        subtitle="Required for the period to be considered audit-ready."
-      >
+      <section className="rounded-xl border border-slate-200 border-t-[3px] border-t-brand-teal bg-[#FAFAFA] p-6 shadow-card">
+        <div className="mb-4">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-slate-800">
+            <LockIcon />
+            Manager attestation
+          </h2>
+          <p className="mt-0.5 text-xs font-medium text-gray-500">
+            Required for the period to be considered audit-ready.
+          </p>
+        </div>
         <div className="flex flex-wrap items-end gap-5">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-gray-500">Manager name</span>
@@ -251,7 +297,7 @@ export default function ReportView() {
         <label className="mt-4 flex items-start gap-2.5">
           <input
             type="checkbox"
-            className="mt-0.5 h-4 w-4 accent-brand-teal"
+            className="mt-0.5 h-4 w-4 rounded accent-brand-teal"
             checked={signed ? true : attested}
             disabled={!!signed}
             onChange={(e) => setAttested(e.target.checked)}
@@ -261,16 +307,25 @@ export default function ReportView() {
             period.
           </span>
         </label>
-        <div className="no-print mt-5 border-t border-slate-100 pt-4">
-          <button
-            className="btn-primary"
-            disabled={!!signed || !attested || managerName.trim() === ''}
-            onClick={() => setSigned({ name: managerName.trim(), date: dateLabel })}
-          >
-            {signed ? 'Report locked' : 'Sign and lock report'}
-          </button>
-        </div>
-      </Card>
+        {signed ? (
+          <div className="mt-5 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+            <CheckIcon />
+            <span className="text-sm font-semibold text-green-700">
+              Signed by {signed.name} · {signed.date}
+            </span>
+          </div>
+        ) : (
+          <div className="no-print mt-5 border-t border-slate-200 pt-4">
+            <button
+              className="btn-primary"
+              disabled={!attested || managerName.trim() === ''}
+              onClick={() => setSigned({ name: managerName.trim(), date: dateLabel })}
+            >
+              Sign and lock report
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   )
 }

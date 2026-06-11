@@ -1,6 +1,7 @@
 import { useApp } from '../context/AppContext'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
+import PageHeader from '../components/PageHeader'
 
 function Toggle({ checked, onChange, label }) {
   return (
@@ -10,7 +11,7 @@ function Toggle({ checked, onChange, label }) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal focus-visible:ring-offset-2 ${
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-150 ${
         checked ? 'bg-brand-teal' : 'bg-slate-300'
       }`}
     >
@@ -41,14 +42,13 @@ export default function AdminView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-800">Admin</h1>
-        <p className="mt-1 text-xs font-medium text-gray-500">
-          Configuration changes apply immediately across the app, including Report totals.
-        </p>
-      </div>
+      <PageHeader
+        title="Admin"
+        subtext="Configuration changes apply immediately across the app, including Report totals."
+      />
 
       <Card
+        accent="teal"
         title="Project registry"
         subtitle="Active projects available for allocation. CapEx/OpEx classification drives report categorization."
       >
@@ -79,7 +79,7 @@ export default function AdminView() {
                             type="button"
                             aria-pressed={p.type === type}
                             onClick={() => updateProject(p.id, { type })}
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-teal ${
+                            className={`px-3 py-1.5 text-xs font-medium transition-colors duration-150 ${
                               p.type === type
                                 ? 'bg-brand-teal text-white'
                                 : 'bg-white text-gray-500 hover:text-slate-800'
@@ -116,6 +116,7 @@ export default function AdminView() {
       </Card>
 
       <Card
+        accent="teal"
         title="Story point conversion"
         subtitle="Hours of effort assumed per Jira story point. Drives every derived-hours figure in the app."
       >
@@ -124,7 +125,7 @@ export default function AdminView() {
             type="number"
             min="0.5"
             step="0.5"
-            className="input w-24 text-center"
+            className="w-[72px] rounded-md border-2 border-brand-teal bg-white px-2 py-1.5 text-center text-2xl font-bold text-brand-teal transition-colors duration-150"
             value={spConversionRate}
             aria-label="Hours per story point"
             onChange={(e) => {
@@ -137,6 +138,7 @@ export default function AdminView() {
       </Card>
 
       <Card
+        accent="teal"
         title="Loaded labor rates"
         subtitle="Fully loaded hourly cost per team member. Used to compute CapEx and OpEx dollars in the Monthly Report."
       >
@@ -173,7 +175,7 @@ export default function AdminView() {
                     </div>
                     <span className="ml-1.5 text-xs text-gray-400">/hr</span>
                   </td>
-                  <td className="td text-right text-gray-500">
+                  <td className="td text-right font-semibold text-slate-900">
                     {usd.format(e.loadedRate * 2080)}
                   </td>
                 </tr>

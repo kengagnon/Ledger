@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import Card from '../components/Card'
 import Badge from '../components/Badge'
 import AllocationInput from '../components/AllocationInput'
+import PageHeader from '../components/PageHeader'
 
 function formatWeek(week) {
   const [y, m, d] = week.split('-').map(Number)
@@ -21,6 +22,21 @@ function formatTime(iso) {
   })
 }
 
+function initials(name) {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
+
+const STATUS_BORDER = {
+  confirmed: 'border-l-brand-green',
+  pending: 'border-l-amber-500',
+  exception: 'border-l-orange-500',
+}
+
 export default function ManagerDashboard({ onNavigate }) {
   const {
     projects,
@@ -29,6 +45,7 @@ export default function ManagerDashboard({ onNavigate }) {
     setAllocation,
     applyTeamSplit,
     confirmationFor,
+    weeklyActivity,
     week,
   } = useApp()
 
@@ -60,21 +77,31 @@ export default function ManagerDashboard({ onNavigate }) {
     return conf.adjusted ? 'exception' : 'confirmed'
   }
 
+  function hasActivity(employeeId) {
+    return (weeklyActivity.find((a) => a.employeeId === employeeId)?.tickets ?? []).length > 0
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Manager Dashboard</h1>
-          <p className="mt-1 text-xs font-medium text-gray-500">
-            Week of {formatWeek(week)} · {confirmedCount} of {employees.length} confirmed
-          </p>
-        </div>
-        <button className="btn-primary" onClick={() => onNavigate('report')}>
-          View Monthly Report
-        </button>
-      </div>
+      <PageHeader
+        title="Manager Dashboard"
+        subtext={
+          <span className="flex flex-wrap items-center gap-2">
+            Week of {formatWeek(week)}
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+              {confirmedCount} of {employees.length} confirmed
+            </span>
+          </span>
+        }
+        actions={
+          <button className="btn-primary" onClick={() => onNavigate('report')}>
+            View Monthly Report
+          </button>
+        }
+      />
 
       <Card
+        accent="teal"
         title="Team allocation"
         subtitle="Manager-set intent split per person. Each row must total 100%."
       >
@@ -111,13 +138,13 @@ export default function ManagerDashboard({ onNavigate }) {
                     ))}
                     <td
                       className={`td text-center font-semibold ${
-                        invalid ? 'text-red-600' : 'text-slate-800'
+                        invalid ? 'text-red-600' : 'text-slate-900'
                       }`}
                     >
-                      {total}%
+                      <span className="block">{total}%</span>
                       {invalid && (
-                        <span className="ml-1.5 align-middle text-xs font-medium text-red-500">
-                          {total > 100 ? 'over' : 'under'}
+                        <span className="block text-[10px] font-medium leading-tight text-red-500">
+                          ≠ 100
                         </span>
                       )}
                     </td>
@@ -130,6 +157,7 @@ export default function ManagerDashboard({ onNavigate }) {
       </Card>
 
       <Card
+        accent="teal"
         title="Set team allocation"
         subtitle="Push a default percentage split to every team member at once."
       >
@@ -178,24 +206,37 @@ export default function ManagerDashboard({ onNavigate }) {
       </Card>
 
       <Card
+        accent="teal"
         title="Weekly confirmation status"
         subtitle={`Who has responded to the week of ${formatWeek(week)} confirmation prompt.`}
       >
-        <ul className="divide-y divide-slate-100">
+        <ul>
           {employees.map((e) => {
             const conf = confirmationFor(e.id)
             const status = statusFor(e.id)
             return (
-              <li key={e.id} className="flex items-center justify-between py-2.5">
+              <li
+                key={e.id}
+                className={`flex min-h-[48px] items-center justify-between gap-4 border-b border-l-[3px] border-b-slate-100 pl-3 last:border-b-0 ${STATUS_BORDER[status]}`}
+              >
                 <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-500">
+                    {initials(e.name)}
+                  </span>
                   <span className="w-40 text-sm font-medium text-slate-800">{e.name}</span>
                   <Badge variant={status} />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
-                  {conf?.confirmed
-                    ? `${status === 'exception' ? 'Adjusted and confirmed' : 'Confirmed'} · ${formatTime(conf.timestamp)}`
-                    : 'No response yet'}
-                </span>
+                {hasActivity(e.id) ? (
+                  <span className="text-xs text-slate-400">
+                    {conf?.confirmed
+                      ? `${status === 'exception' ? 'Adjusted and confirmed' : 'Confirmed'} · ${formatTime(conf.timestamp)}`
+                      : 'No response yet'}
+                  </span>
+                ) : (
+                  <span className="text-xs italic text-slate-400">
+                    No Jira activity recorded this week
+                  </span>
+                )}
               </li>
             )
           })}
