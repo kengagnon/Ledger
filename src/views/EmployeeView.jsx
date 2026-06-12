@@ -14,6 +14,11 @@ function formatWeek(week) {
   })
 }
 
+const CLASSIFICATION_FILL = {
+  capex: '#009EDE',
+  opex: '#5C645F',
+}
+
 export default function EmployeeView() {
   const {
     employees,
@@ -77,8 +82,9 @@ export default function EmployeeView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-10">
       <PageHeader
+        eyebrow="Employee · Weekly Confirmation"
         title={`Week of ${formatWeek(week)}`}
         subtext={
           <>
@@ -88,7 +94,7 @@ export default function EmployeeView() {
         }
         actions={
           <label className="flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-500">Viewing as</span>
+            <span className="eyebrow">Viewing as</span>
             <select
               className="input"
               value={selectedId}
@@ -105,25 +111,42 @@ export default function EmployeeView() {
       />
 
       {confirmation?.confirmed && (
-        <div className="flex items-start justify-between gap-4 rounded-lg border border-green-200 bg-green-50 px-5 py-4">
-          <div>
-            <p className="text-sm font-semibold text-green-800">
-              {employee.name} confirmed this week&rsquo;s allocation
-              {confirmation.adjusted ? ' with adjustments' : ''}
-            </p>
-            <p className="mt-1 text-xs font-medium text-green-700">
-              {new Date(confirmation.timestamp).toLocaleString('en-US', {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              })}
-              {' · '}
-              {confirmation.adjustedAllocations
-                .map((a) => `${projectById[a.projectId]?.name} ${a.percentage}%`)
-                .join(' · ')}
-            </p>
+        <div className="flex items-start justify-between gap-4 rounded-[2px] bg-ink px-6 py-5 text-paper">
+          <div className="flex items-start gap-3">
+            <svg
+              className="mt-0.5 h-5 w-5 shrink-0"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect x="1" y="1" width="18" height="18" stroke="#97D162" strokeWidth="1.5" />
+              <path
+                d="M6 10.5l3 3 5.5-7"
+                stroke="#97D162"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div>
+              <p className="text-sm font-medium">
+                {employee.name} confirmed this week&rsquo;s allocation
+                {confirmation.adjusted ? ' with adjustments' : ''}
+              </p>
+              <p className="mt-1.5 font-mono text-xs text-[rgba(252,252,250,0.65)]">
+                {new Date(confirmation.timestamp).toLocaleString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+                {' · '}
+                {confirmation.adjustedAllocations
+                  .map((a) => `${projectById[a.projectId]?.name} ${a.percentage}%`)
+                  .join(' · ')}
+              </p>
+            </div>
           </div>
           <Badge variant={confirmation.adjusted ? 'exception' : 'confirmed'} />
         </div>
@@ -134,30 +157,42 @@ export default function EmployeeView() {
           const h = hours[p.id] || 0
           const pct = split.find((s) => s.projectId === p.id)?.percentage || 0
           return (
-            <Card key={p.id} accent={p.type} className="relative">
-              <span className="absolute right-4 top-4">
+            <Card key={p.id}>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="section-title">{p.name}</h2>
                 <Badge variant={p.type} />
-              </span>
-              <h2 className="text-base font-semibold text-slate-800">{p.name}</h2>
-              <p className="mt-3 text-4xl font-bold text-slate-900">
-                {h}{' '}
-                <span className="text-[13px] font-normal text-slate-500">hrs est.</span>
+              </div>
+              <p className="mt-5 font-mono text-[40px] font-medium leading-none text-ink">
+                {h}
               </p>
-              <p className="mt-1 text-[13px] text-slate-500">{pct}% of your week</p>
+              <p className="eyebrow mt-2">hrs estimated</p>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="h-1 flex-1 bg-hairline">
+                  <div
+                    className="h-full"
+                    style={{
+                      width: `${Math.min(pct, 100)}%`,
+                      backgroundColor: CLASSIFICATION_FILL[p.type] || CLASSIFICATION_FILL.opex,
+                    }}
+                  />
+                </div>
+                <span className="font-mono text-xs text-txt-secondary">{pct}%</span>
+              </div>
             </Card>
           )
         })}
       </div>
 
-      <Card
-        accent="teal"
-        title="Confirm your split"
-        subtitle="Pre-populated from your Jira activity. Adjust if it doesn't match reality — must total 100%."
-      >
-        <div className="flex flex-wrap items-end gap-5">
+      <section>
+        <h2 className="section-title">Confirm your split</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Pre-populated from your Jira activity. Adjust if it doesn&rsquo;t match reality —
+          must total 100%.
+        </p>
+        <div className="mt-4 flex flex-wrap items-end gap-6">
           {activeProjects.map((p) => (
-            <label key={p.id} className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-500">{p.name}</span>
+            <label key={p.id} className="flex flex-col gap-2">
+              <span className="eyebrow">{p.name}</span>
               <AllocationInput
                 value={values[p.id] || 0}
                 invalid={total !== 100}
@@ -169,20 +204,20 @@ export default function EmployeeView() {
           ))}
           <div className="flex flex-col pb-1">
             <span
-              className={`text-sm font-semibold ${
-                total === 100 ? 'text-slate-900' : 'text-red-600'
+              className={`font-mono text-sm font-semibold ${
+                total === 100 ? 'text-txt-primary' : 'text-[#C2410C]'
               }`}
             >
               Total {total}%
             </span>
             {total !== 100 && (
-              <span className="text-[10px] font-medium text-red-500">≠ 100</span>
+              <span className="font-mono text-[10px] text-[#C2410C]">≠ 100</span>
             )}
           </div>
         </div>
 
         {!confirmation?.confirmed && (
-          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
             <button className="btn-primary" onClick={() => handleConfirm(false)}>
               Looks right — Confirm
             </button>
@@ -194,21 +229,22 @@ export default function EmployeeView() {
               Save adjustments and confirm
             </button>
             {hasEdits && total === 100 && (
-              <span className="text-xs font-medium text-gray-500">
+              <span className="text-xs text-txt-secondary">
                 Your adjustments will be flagged for manager review.
               </span>
             )}
           </div>
         )}
-      </Card>
+      </section>
 
-      <Card
-        accent="teal"
-        title="Jira activity this week"
-        subtitle={`Read-only context · story points convert at ${spConversionRate} hrs/SP · ${totalHours} hrs total`}
-      >
-        <div className="overflow-x-auto">
-          <table className="table-striped w-full border-collapse">
+      <section>
+        <h2 className="section-title">Jira activity this week</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Read-only context · story points convert at {spConversionRate} hrs/SP ·{' '}
+          {totalHours} hrs total
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="th">Ticket</th>
@@ -221,14 +257,12 @@ export default function EmployeeView() {
             <tbody>
               {tickets.map((t) => (
                 <tr key={t.key}>
-                  <td className="td">
-                    <span className="ticket-key">{t.key}</span>
-                  </td>
+                  <td className="td font-mono text-[13.5px]">{t.key}</td>
                   <td className="td">{t.title}</td>
-                  <td className="td text-right">{t.storyPoints}</td>
-                  <td className="td text-right">{t.storyPoints * spConversionRate}</td>
+                  <td className="td td-num">{t.storyPoints}</td>
+                  <td className="td td-num">{t.storyPoints * spConversionRate}</td>
                   <td className="td">
-                    <span className="mr-2">{projectById[t.projectId]?.name}</span>
+                    <span className="mr-2.5">{projectById[t.projectId]?.name}</span>
                     <Badge variant={projectById[t.projectId]?.type} />
                   </td>
                 </tr>
@@ -236,7 +270,7 @@ export default function EmployeeView() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </section>
     </div>
   )
 }

@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../context/AppContext'
-import Card from '../components/Card'
 import Badge from '../components/Badge'
-import PageHeader from '../components/PageHeader'
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -12,41 +10,6 @@ const usd = new Intl.NumberFormat('en-US', {
 
 function formatHours(h) {
   return Number.isInteger(h) ? String(h) : h.toFixed(1)
-}
-
-function LockIcon() {
-  return (
-    <svg
-      className="h-4 w-4 shrink-0 text-slate-500"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="5" y="11" width="14" height="9" rx="2" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      className="h-4 w-4 shrink-0 text-green-700"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M5 13l4 4L19 7" />
-    </svg>
-  )
 }
 
 export default function ReportView() {
@@ -159,173 +122,185 @@ export default function ReportView() {
     URL.revokeObjectURL(url)
   }
 
+  const checkboxChecked = signed ? true : attested
+
   return (
-    <div className="space-y-6">
-      <div className="-mx-6 -mt-8 border-b border-slate-200 bg-slate-50 px-6 py-6">
-        <PageHeader
-          title={`IT Labor Cost Allocation Report — ${monthLabel}`}
-          subtext="Derived from confirmed weekly allocations and loaded labor rates."
-          actions={
-            <div className="no-print flex items-center gap-2">
-              <button className="btn-secondary" onClick={exportCsv}>
-                Export CSV
-              </button>
-              <button className="btn-secondary" onClick={() => window.print()}>
-                Print / Export PDF
-              </button>
-            </div>
-          }
-        />
+    <div className="mx-auto max-w-[1000px]">
+      <div className="no-print mb-6 flex justify-end gap-2">
+        <button className="btn-ghost-dark" onClick={exportCsv}>
+          Export CSV
+        </button>
+        <button className="btn-ghost-dark" onClick={() => window.print()}>
+          Print / Export PDF
+        </button>
       </div>
 
-      {signed && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-5 py-4">
-          <p className="text-sm font-semibold text-green-800">
-            Report signed and locked by {signed.name}
+      <div className="report-sheet sheet-land mx-auto max-w-[880px] rounded-[2px] bg-white px-8 py-12 shadow-sheet sm:px-[72px] sm:py-16">
+        <header>
+          <p className="eyebrow">First Tech Federal Credit Union</p>
+          <h1 className="mt-3 font-display text-4xl font-medium leading-tight tracking-[-0.01em] text-txt-primary">
+            IT Labor Cost Allocation
+          </h1>
+          <p className="mt-2.5 font-mono text-xs text-txt-secondary">
+            {monthLabel} · Prepared by Ledger
           </p>
-          <p className="mt-1 text-xs font-medium text-green-700">
-            Attested {signed.date} · Allocation figures for {monthLabel} are frozen.
+          <div className="mt-7 border-b-[1.5px] border-txt-primary" />
+        </header>
+
+        {signed && (
+          <p className="mt-5 font-mono text-xs text-txt-secondary">
+            Report signed and locked by {signed.name} · Attested {signed.date} · Allocation
+            figures for {monthLabel} are frozen.
           </p>
-        </div>
-      )}
-
-      <Card accent="teal" title="Summary by employee">
-        <div className="overflow-x-auto">
-          <table className="table-striped w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="th">Employee</th>
-                <th className="th text-right">Total Hours</th>
-                <th className="th text-right">CapEx Hours</th>
-                <th className="th text-right">OpEx Hours</th>
-                <th className="th text-right">Loaded Rate</th>
-                <th className="th text-right">CapEx $</th>
-                <th className="th text-right">OpEx $</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.employee.id}>
-                  <td className="td font-medium text-slate-800">{r.employee.name}</td>
-                  <td className="td text-right">{formatHours(r.totalHours)}</td>
-                  <td className="td text-right">{formatHours(r.capexHours)}</td>
-                  <td className="td text-right">{formatHours(r.opexHours)}</td>
-                  <td className="td text-right">{usd.format(r.employee.loadedRate)}/hr</td>
-                  <td className="td text-right font-semibold text-slate-900">
-                    {usd.format(r.capexDollars)}
-                  </td>
-                  <td className="td text-right font-semibold text-slate-900">
-                    {usd.format(r.opexDollars)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-green-50">
-                <td className="td border-t-2 border-t-brand-teal font-bold text-slate-900">
-                  Total
-                </td>
-                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
-                  {formatHours(totals.totalHours)}
-                </td>
-                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
-                  {formatHours(totals.capexHours)}
-                </td>
-                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
-                  {formatHours(totals.opexHours)}
-                </td>
-                <td className="td border-t-2 border-t-brand-teal" />
-                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
-                  {usd.format(totals.capexDollars)}
-                </td>
-                <td className="td border-t-2 border-t-brand-teal text-right font-bold text-slate-900">
-                  {usd.format(totals.opexDollars)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </Card>
-
-      <section>
-        <h2 className="mb-3 text-base font-semibold text-slate-800">Project breakdown</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {projectBreakdown.map(({ project, hours, dollars }) => (
-            <Card key={project.id} accent={project.type}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-slate-800">{project.name}</h3>
-                <Badge variant={project.type} />
-              </div>
-              <p className="mt-3 text-[32px] font-bold leading-tight text-slate-900">
-                {usd.format(dollars)}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {formatHours(hours)} hrs allocated this period
-              </p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-slate-200 border-t-[3px] border-t-brand-teal bg-[#FAFAFA] p-6 shadow-card">
-        <div className="mb-4">
-          <h2 className="flex items-center gap-2 text-base font-semibold text-slate-800">
-            <LockIcon />
-            Manager attestation
-          </h2>
-          <p className="mt-0.5 text-xs font-medium text-gray-500">
-            Required for the period to be considered audit-ready.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-5">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-gray-500">Manager name</span>
-            <input
-              type="text"
-              className="input w-64"
-              placeholder="Full name"
-              value={signed ? signed.name : managerName}
-              disabled={!!signed}
-              onChange={(e) => setManagerName(e.target.value)}
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-gray-500">Date</span>
-            <input type="text" className="input w-44" value={dateLabel} disabled readOnly />
-          </label>
-        </div>
-        <label className="mt-4 flex items-start gap-2.5">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 rounded accent-brand-teal"
-            checked={signed ? true : attested}
-            disabled={!!signed}
-            onChange={(e) => setAttested(e.target.checked)}
-          />
-          <span className="text-sm text-gray-700">
-            I confirm this allocation accurately reflects my team&rsquo;s labor activity for the
-            period.
-          </span>
-        </label>
-        {signed ? (
-          <div className="mt-5 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <CheckIcon />
-            <span className="text-sm font-semibold text-green-700">
-              Signed by {signed.name} · {signed.date}
-            </span>
-          </div>
-        ) : (
-          <div className="no-print mt-5 border-t border-slate-200 pt-4">
-            <button
-              className="btn-primary"
-              disabled={!attested || managerName.trim() === ''}
-              onClick={() => setSigned({ name: managerName.trim(), date: dateLabel })}
-            >
-              Sign and lock report
-            </button>
-          </div>
         )}
-      </section>
+
+        <section className="mt-9">
+          <h2 className="section-title">Summary by employee</h2>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="th">Employee</th>
+                  <th className="th text-right">Total Hours</th>
+                  <th className="th text-right">CapEx Hours</th>
+                  <th className="th text-right">OpEx Hours</th>
+                  <th className="th text-right">Loaded Rate</th>
+                  <th className="th text-right">CapEx $</th>
+                  <th className="th text-right">OpEx $</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.employee.id}>
+                    <td className="td font-medium">{r.employee.name}</td>
+                    <td className="td td-num">{formatHours(r.totalHours)}</td>
+                    <td className="td td-num">{formatHours(r.capexHours)}</td>
+                    <td className="td td-num">{formatHours(r.opexHours)}</td>
+                    <td className="td td-num">{usd.format(r.employee.loadedRate)}/hr</td>
+                    <td className="td td-num">{usd.format(r.capexDollars)}</td>
+                    <td className="td td-num">{usd.format(r.opexDollars)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="total-row">
+                  <td className="td">Total</td>
+                  <td className="td td-num">{formatHours(totals.totalHours)}</td>
+                  <td className="td td-num">{formatHours(totals.capexHours)}</td>
+                  <td className="td td-num">{formatHours(totals.opexHours)}</td>
+                  <td className="td" />
+                  <td className="td td-num">{usd.format(totals.capexDollars)}</td>
+                  <td className="td td-num">{usd.format(totals.opexDollars)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="section-title">Project breakdown</h2>
+          <div className="mt-5 grid gap-8 sm:grid-cols-3">
+            {projectBreakdown.map(({ project, hours, dollars }) => (
+              <div key={project.id}>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-medium text-txt-primary">{project.name}</h3>
+                  <Badge variant={project.type} />
+                </div>
+                <p className="mt-3 font-mono text-[28px] font-medium leading-none text-txt-primary">
+                  {usd.format(dollars)}
+                </p>
+                <p className="mt-2 font-mono text-xs text-txt-secondary">
+                  {formatHours(hours)} hrs this period
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-14 border-t border-hairline pt-7">
+          <p className="eyebrow">Attestation</p>
+          <p className="mt-4 font-display text-base italic text-txt-primary">
+            I confirm this allocation accurately reflects my team&rsquo;s labor activity for
+            the period.
+          </p>
+          <div className="mt-8 flex flex-wrap items-end gap-10">
+            <label className="flex w-72 flex-col">
+              <input
+                type="text"
+                className="signature-input"
+                placeholder="Sign here"
+                value={signed ? signed.name : managerName}
+                disabled={!!signed}
+                onChange={(e) => setManagerName(e.target.value)}
+              />
+              <span className="eyebrow mt-2">Manager name</span>
+            </label>
+            <div className="flex flex-col">
+              <span className="pb-1 font-mono text-sm text-txt-primary">{dateLabel}</span>
+              <span className="eyebrow mt-2">Date</span>
+            </div>
+          </div>
+          <label className="mt-7 inline-flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={checkboxChecked}
+              disabled={!!signed}
+              onChange={(e) => setAttested(e.target.checked)}
+            />
+            <span
+              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border-[1.5px] border-ink peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-teal ${
+                checkboxChecked ? 'bg-ink' : 'bg-white'
+              }`}
+              aria-hidden="true"
+            >
+              {checkboxChecked && (
+                <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path
+                    d="M2.5 6.5l2.5 2.5 4.5-5.5"
+                    stroke="#FCFCFA"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </span>
+            <span className="text-sm text-txt-primary">
+              I attest to the figures above for {monthLabel}.
+            </span>
+          </label>
+
+          {signed ? (
+            <div className="mt-8 flex items-center gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-ink">
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path
+                    d="M4 10.5l4 4 8-9.5"
+                    stroke="#FCFCFA"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="font-mono text-sm text-txt-primary">
+                Signed by {signed.name} · {signed.date}
+              </span>
+            </div>
+          ) : (
+            <div className="no-print mt-8">
+              <button
+                className="btn-primary"
+                disabled={!attested || managerName.trim() === ''}
+                onClick={() => setSigned({ name: managerName.trim(), date: dateLabel })}
+              >
+                Sign and lock report
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

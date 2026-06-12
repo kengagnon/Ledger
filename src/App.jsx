@@ -11,13 +11,22 @@ export default function App() {
 
   return (
     <AppProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-paper min-[900px]:flex">
         <Nav tab={tab} onChange={setTab} />
-        <main className="mx-auto max-w-[1100px] px-6 py-8">
-          {tab === 'manager' && <ManagerDashboard onNavigate={setTab} />}
-          {tab === 'employee' && <EmployeeView />}
-          {tab === 'report' && <ReportView />}
-          {tab === 'admin' && <AdminView />}
+        <main className={`min-h-screen min-w-0 flex-1 ${tab === 'report' ? 'bg-ink' : 'bg-paper'}`}>
+          <div
+            key={tab}
+            className={
+              tab === 'report'
+                ? 'px-8 py-10'
+                : 'mx-auto max-w-[1240px] px-8 py-10 min-[900px]:px-14 min-[900px]:py-12'
+            }
+          >
+            {tab === 'manager' && <ManagerDashboard onNavigate={setTab} />}
+            {tab === 'employee' && <EmployeeView />}
+            {tab === 'report' && <ReportView />}
+            {tab === 'admin' && <AdminView />}
+          </div>
         </main>
       </div>
     </AppProvider>

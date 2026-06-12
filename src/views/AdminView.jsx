@@ -1,5 +1,4 @@
 import { useApp } from '../context/AppContext'
-import Card from '../components/Card'
 import Badge from '../components/Badge'
 import PageHeader from '../components/PageHeader'
 
@@ -11,12 +10,12 @@ function Toggle({ checked, onChange, label }) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-150 ${
-        checked ? 'bg-brand-teal' : 'bg-slate-300'
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center transition-colors duration-100 ${
+        checked ? 'bg-ink' : 'bg-hairline'
       }`}
     >
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+        className={`inline-block h-3.5 w-3.5 transform bg-white shadow transition-transform ${
           checked ? 'translate-x-[18px]' : 'translate-x-[3px]'
         }`}
       />
@@ -41,19 +40,21 @@ export default function AdminView() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-10">
       <PageHeader
+        eyebrow="Configuration"
         title="Admin"
         subtext="Configuration changes apply immediately across the app, including Report totals."
       />
 
-      <Card
-        accent="teal"
-        title="Project registry"
-        subtitle="Active projects available for allocation. CapEx/OpEx classification drives report categorization."
-      >
-        <div className="overflow-x-auto">
-          <table className="table-striped w-full border-collapse">
+      <section>
+        <h2 className="section-title">Project registry</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Active projects available for allocation. CapEx/OpEx classification drives report
+          categorization.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="th">Project</th>
@@ -65,11 +66,11 @@ export default function AdminView() {
             <tbody>
               {projects.map((p) => (
                 <tr key={p.id} className={p.active ? '' : 'opacity-60'}>
-                  <td className="td font-medium text-slate-800">{p.name}</td>
+                  <td className="td font-medium">{p.name}</td>
                   <td className="td">
-                    <div className="inline-flex items-center gap-2">
+                    <div className="inline-flex items-center gap-3">
                       <div
-                        className="inline-flex overflow-hidden rounded-md border border-gray-300"
+                        className="inline-flex overflow-hidden rounded-[2px] border border-txt-primary"
                         role="group"
                         aria-label={`${p.name} classification`}
                       >
@@ -79,10 +80,10 @@ export default function AdminView() {
                             type="button"
                             aria-pressed={p.type === type}
                             onClick={() => updateProject(p.id, { type })}
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors duration-150 ${
+                            className={`px-3 py-1.5 text-xs font-medium transition-colors duration-100 ${
                               p.type === type
-                                ? 'bg-brand-teal text-white'
-                                : 'bg-white text-gray-500 hover:text-slate-800'
+                                ? 'bg-ink text-paper'
+                                : 'bg-white text-txt-secondary hover:text-txt-primary'
                             }`}
                           >
                             {type === 'capex' ? 'CapEx' : 'OpEx'}
@@ -113,19 +114,20 @@ export default function AdminView() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </section>
 
-      <Card
-        accent="teal"
-        title="Story point conversion"
-        subtitle="Hours of effort assumed per Jira story point. Drives every derived-hours figure in the app."
-      >
-        <label className="flex items-center gap-3">
+      <section>
+        <h2 className="section-title">Story point conversion</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Hours of effort assumed per Jira story point. Drives every derived-hours figure in
+          the app.
+        </p>
+        <label className="mt-5 flex flex-col gap-2">
           <input
             type="number"
             min="0.5"
             step="0.5"
-            className="w-[72px] rounded-md border-2 border-brand-teal bg-white px-2 py-1.5 text-center text-2xl font-bold text-brand-teal transition-colors duration-150"
+            className="input-ledger h-auto w-24 px-1 py-1 text-left text-[32px] font-medium leading-none"
             value={spConversionRate}
             aria-label="Hours per story point"
             onChange={(e) => {
@@ -133,17 +135,18 @@ export default function AdminView() {
               setSpConversionRate(Number.isNaN(n) || n <= 0 ? 0.5 : n)
             }}
           />
-          <span className="text-sm text-gray-700">hours per story point</span>
+          <span className="eyebrow">Hours per story point</span>
         </label>
-      </Card>
+      </section>
 
-      <Card
-        accent="teal"
-        title="Loaded labor rates"
-        subtitle="Fully loaded hourly cost per team member. Used to compute CapEx and OpEx dollars in the Monthly Report."
-      >
-        <div className="overflow-x-auto">
-          <table className="table-striped w-full max-w-xl border-collapse">
+      <section>
+        <h2 className="section-title">Loaded labor rates</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Fully loaded hourly cost per team member. Used to compute CapEx and OpEx dollars in
+          the Monthly Report.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full max-w-xl border-collapse">
             <thead>
               <tr>
                 <th className="th">Team member</th>
@@ -154,28 +157,24 @@ export default function AdminView() {
             <tbody>
               {employees.map((e) => (
                 <tr key={e.id}>
-                  <td className="td font-medium text-slate-800">{e.name}</td>
-                  <td className="td text-right">
-                    <div className="relative inline-flex items-center">
-                      <span className="pointer-events-none absolute left-3 text-xs text-gray-400">
-                        $
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        className="input w-28 pl-6 text-right"
-                        value={e.loadedRate}
-                        aria-label={`${e.name} loaded hourly rate`}
-                        onChange={(ev) => {
-                          const n = Number(ev.target.value)
-                          updateRate(e.id, Number.isNaN(n) || n < 0 ? 0 : n)
-                        }}
-                      />
-                    </div>
-                    <span className="ml-1.5 text-xs text-gray-400">/hr</span>
+                  <td className="td font-medium">{e.name}</td>
+                  <td className="td td-num">
+                    <span className="mr-0.5 font-mono text-xs text-txt-tertiary">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      className="input-ledger w-20 text-right"
+                      value={e.loadedRate}
+                      aria-label={`${e.name} loaded hourly rate`}
+                      onChange={(ev) => {
+                        const n = Number(ev.target.value)
+                        updateRate(e.id, Number.isNaN(n) || n < 0 ? 0 : n)
+                      }}
+                    />
+                    <span className="ml-1 font-mono text-xs text-txt-tertiary">/hr</span>
                   </td>
-                  <td className="td text-right font-semibold text-slate-900">
+                  <td className="td td-num text-txt-tertiary">
                     {usd.format(e.loadedRate * 2080)}
                   </td>
                 </tr>
@@ -183,7 +182,7 @@ export default function AdminView() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </section>
     </div>
   )
 }

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import Card from '../components/Card'
 import Badge from '../components/Badge'
 import AllocationInput from '../components/AllocationInput'
 import PageHeader from '../components/PageHeader'
@@ -29,12 +28,6 @@ function initials(name) {
     .join('')
     .slice(0, 2)
     .toUpperCase()
-}
-
-const STATUS_BORDER = {
-  confirmed: 'border-l-brand-green',
-  pending: 'border-l-amber-500',
-  exception: 'border-l-orange-500',
 }
 
 export default function ManagerDashboard({ onNavigate }) {
@@ -82,15 +75,13 @@ export default function ManagerDashboard({ onNavigate }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-10">
       <PageHeader
+        eyebrow={`Allocation · Week of ${formatWeek(week)}`}
         title="Manager Dashboard"
         subtext={
-          <span className="flex flex-wrap items-center gap-2">
-            Week of {formatWeek(week)}
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-              {confirmedCount} of {employees.length} confirmed
-            </span>
+          <span className="font-mono text-[13px]">
+            {confirmedCount} of {employees.length} confirmed
           </span>
         }
         actions={
@@ -100,23 +91,23 @@ export default function ManagerDashboard({ onNavigate }) {
         }
       />
 
-      <Card
-        accent="teal"
-        title="Team allocation"
-        subtitle="Manager-set intent split per person. Each row must total 100%."
-      >
-        <div className="overflow-x-auto">
-          <table className="table-striped w-full border-collapse">
+      <section>
+        <h2 className="section-title">Team allocation</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Manager-set intent split per person. Each row must total 100%.
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="th">Name</th>
                 {activeProjects.map((p) => (
-                  <th key={p.id} className="th text-center">
-                    <span className="mr-1.5">{p.name}</span>
+                  <th key={p.id} className="th text-right">
+                    <span className="mr-2">{p.name}</span>
                     <Badge variant={p.type} />
                   </th>
                 ))}
-                <th className="th text-center">Total</th>
+                <th className="th text-right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -125,9 +116,9 @@ export default function ManagerDashboard({ onNavigate }) {
                 const invalid = total !== 100
                 return (
                   <tr key={e.id}>
-                    <td className="td font-medium text-slate-800">{e.name}</td>
+                    <td className="td font-medium">{e.name}</td>
                     {activeProjects.map((p) => (
-                      <td key={p.id} className="td text-center">
+                      <td key={p.id} className="td text-right">
                         <AllocationInput
                           value={allocationFor(e.id, p.id)}
                           invalid={invalid}
@@ -136,14 +127,10 @@ export default function ManagerDashboard({ onNavigate }) {
                         />
                       </td>
                     ))}
-                    <td
-                      className={`td text-center font-semibold ${
-                        invalid ? 'text-red-600' : 'text-slate-900'
-                      }`}
-                    >
-                      <span className="block">{total}%</span>
+                    <td className={`td td-num font-medium ${invalid ? 'text-[#C2410C]' : ''}`}>
+                      <span className="block leading-tight">{total}%</span>
                       {invalid && (
-                        <span className="block text-[10px] font-medium leading-tight text-red-500">
+                        <span className="block text-[10px] leading-tight text-[#C2410C]">
                           ≠ 100
                         </span>
                       )}
@@ -154,17 +141,17 @@ export default function ManagerDashboard({ onNavigate }) {
             </tbody>
           </table>
         </div>
-      </Card>
+      </section>
 
-      <Card
-        accent="teal"
-        title="Set team allocation"
-        subtitle="Push a default percentage split to every team member at once."
-      >
-        <div className="flex flex-wrap items-end gap-5">
+      <section>
+        <h2 className="section-title">Set team allocation</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Push a default percentage split to every team member at once.
+        </p>
+        <div className="mt-4 flex flex-wrap items-end gap-6">
           {activeProjects.map((p) => (
-            <label key={p.id} className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-gray-500">{p.name}</span>
+            <label key={p.id} className="flex flex-col gap-2">
+              <span className="eyebrow">{p.name}</span>
               <AllocationInput
                 value={teamSplit[p.id] || 0}
                 invalid={teamSplitTotal !== 100}
@@ -193,47 +180,47 @@ export default function ManagerDashboard({ onNavigate }) {
               Apply to whole team
             </button>
             {teamSplitTotal !== 100 ? (
-              <span className="text-xs font-medium text-red-500">
+              <span className="font-mono text-xs text-[#C2410C]">
                 Split totals {teamSplitTotal}% — must equal 100%
               </span>
             ) : applied ? (
-              <span className="text-xs font-medium text-green-700">
+              <span className="font-mono text-xs text-brand-green">
                 Applied to all {employees.length} team members
               </span>
             ) : null}
           </div>
         </div>
-      </Card>
+      </section>
 
-      <Card
-        accent="teal"
-        title="Weekly confirmation status"
-        subtitle={`Who has responded to the week of ${formatWeek(week)} confirmation prompt.`}
-      >
-        <ul>
+      <section>
+        <h2 className="section-title">Weekly confirmation status</h2>
+        <p className="mt-1 text-xs text-txt-secondary">
+          Who has responded to the week of {formatWeek(week)} confirmation prompt.
+        </p>
+        <ul className="mt-4 border-t-[1.5px] border-txt-primary">
           {employees.map((e) => {
             const conf = confirmationFor(e.id)
             const status = statusFor(e.id)
             return (
               <li
                 key={e.id}
-                className={`flex min-h-[48px] items-center justify-between gap-4 border-b border-l-[3px] border-b-slate-100 pl-3 last:border-b-0 ${STATUS_BORDER[status]}`}
+                className="flex min-h-[56px] items-center justify-between gap-4 border-b border-hairline"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-500">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-ink font-mono text-[11px] text-paper">
                     {initials(e.name)}
                   </span>
-                  <span className="w-40 text-sm font-medium text-slate-800">{e.name}</span>
+                  <span className="w-40 text-sm font-medium">{e.name}</span>
                   <Badge variant={status} />
                 </div>
                 {hasActivity(e.id) ? (
-                  <span className="text-xs text-slate-400">
+                  <span className="font-mono text-xs text-txt-tertiary">
                     {conf?.confirmed
                       ? `${status === 'exception' ? 'Adjusted and confirmed' : 'Confirmed'} · ${formatTime(conf.timestamp)}`
                       : 'No response yet'}
                   </span>
                 ) : (
-                  <span className="text-xs italic text-slate-400">
+                  <span className="text-xs italic text-txt-tertiary">
                     No Jira activity recorded this week
                   </span>
                 )}
@@ -241,7 +228,7 @@ export default function ManagerDashboard({ onNavigate }) {
             )
           })}
         </ul>
-      </Card>
+      </section>
     </div>
   )
 }
